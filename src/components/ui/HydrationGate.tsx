@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, ReactNode } from "react";
-import { useEmployeeStore } from "@/store/useEmployeeStore";
+import { ReactNode } from "react";
 
+/**
+ * HydrationGate - ensures client-side hydration before rendering children.
+ * Employee initialization is now handled by FirebaseSync after login.
+ */
 export default function HydrationGate({ children }: { children: ReactNode }) {
-  const initializeEmployees = useEmployeeStore((s) => s.initializeEmployees);
-
-  useEffect(() => {
-    initializeEmployees();
-  }, [initializeEmployees]);
-
   return <>{children}</>;
 }

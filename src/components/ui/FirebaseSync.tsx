@@ -1,81 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useUserStore } from "@/store/useUserStore";
+import { useEffect } from "react";
 import { useScheduleStore } from "@/store/useScheduleStore";
-import { migrateSchedulesToFirebase, loadSchedulesFromFirebase } from "@/lib/firebase-sync";
+import { useEmployeeStore } from "@/store/useEmployeeStore";
+import { auth } from "@/lib/firebase";
 
 /**
- * Component that handles Firebase sync on app startup
- * - Migrates localStorage data to Firebase (one-time)
- * - Loads schedules from Firebase
+ * Component that activates Firebase real-time listeners when user is logged in.
+ * - Starts schedule & employee listeners on login
+ * - Stops listeners on logout
+ * - Initializes employees (seeds) on first run
  */
 export default function FirebaseSync() {
-  const [hasChecked, setHasChecked] = useState(false);
-
   useEffect(() => {
-    const syncData = async () => {
-      try {
-        // Wait for both stores to be hydrated from localStorage
-        const userHydrated = useUserStore.getState()?._hasHydrated;
-        const scheduleHydrated = useScheduleStore.getState()?._hasHydrated;
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        // User logged in → start real-time listeners
+        useScheduleStore.getState().startListening();
+        useEmployeeStore.getState().startListening();
 
-        if (!userHydrated || !scheduleHydrated) {
-          console.log("Waiting for stores to hydrate...", { userHydrated, scheduleHydrated });
-          // Try again in 300ms
-          setTimeout(syncData, 300);
-          return;
-        }
-
-        // Additional delay to ensure localStorage data is fully loaded into store
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
-        const userProfile = useUserStore.getState()?.userProfile;
-
-        // Only sync if user is logged in
-        if (!userProfile) {
-          console.log("User not logged in, skipping sync");
-          setHasChecked(true);
-          return;
-        }
-
-        console.log("Starting Firebase sync...");
-
-        // Load schedules from Firebase
+        // Initialize employees if not yet done (first-time seed)
         try {
-          await loadSchedulesFromFirebase();
-        } catch (error) {
-          console.warn("Failed to load schedules from Firebase:", error);
+          await useEmployeeStore.getState().initializeEmployees();
+        } catch (err) {
+          console.error("Employee initialization error:", err);
         }
 
-        // Migration: move data from localStorage to Firebase (one-time)
-        // This only happens if there's data in localStorage
-        try {
-          if (typeof localStorage !== 'undefined') {
-            const localSchedules = localStorage.getItem("staff-scheduler-schedules");
-            if (localSchedules) {
-              console.log("Found local schedules, migrating to Firebase...");
-              await migrateSchedulesToFirebase();
-              console.log("✓ Migration complete");
-            } else {
-              console.log("No local schedules to migrate");
-            }
-          }
-        } catch (error) {
-          console.warn("Migration skipped or failed", error);
-        }
-
-        setHasChecked(true);
-      } catch (error) {
-        console.error("Firebase sync error:", error);
-        setHasChecked(true);
+        console.log("✓ Firebase sync active for", user.email);
+      } else {
+        // User logged out → stop listeners
+        useScheduleStore.getState().stopListening();
+        useEmployeeStore.getState().stopListening();
       }
-    };
+    });
 
-    if (!hasChecked) {
-      syncData();
-    }
-  }, [hasChecked]);
+    return () => unsubscribe();
+  }, []);
 
-  return null; // This component doesn't render anything
+  return null;
 }
