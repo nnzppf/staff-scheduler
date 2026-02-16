@@ -25,12 +25,12 @@ export default function ScheduleCalendar() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-6 py-4 px-4">
+    <div className="flex flex-col items-center gap-3 md:gap-6 py-4 px-4">
       <div className="w-full max-w-2xl">
         <h1 className="text-2xl md:text-3xl font-bold mb-2 text-center">
           Seleziona un giorno
         </h1>
-        <p className="text-sm text-gray-500 text-center mb-6">
+        <p className="text-sm text-gray-500 text-center mb-4 md:mb-6">
           I giorni con sfondo blu hanno già una programmazione salvata
         </p>
 
