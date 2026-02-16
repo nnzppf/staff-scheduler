@@ -5,18 +5,17 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 interface TransitionContextType {
   navigateTo: (href: string) => void;
-  isTransitioning: boolean;
 }
 
 const TransitionContext = createContext<TransitionContextType>({
   navigateTo: () => {},
-  isTransitioning: false,
 });
 
 export function usePageTransition() {
@@ -29,36 +28,41 @@ export default function TransitionProvider({
   children: ReactNode;
 }) {
   const router = useRouter();
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const pathname = usePathname();
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+
+  // When pathname changes, the new page has mounted — hide the overlay
+  useEffect(() => {
+    if (pathname !== prevPathname) {
+      setPrevPathname(pathname);
+      // Small delay to let the new page render before removing overlay
+      setTimeout(() => setShowOverlay(false), 30);
+    }
+  }, [pathname, prevPathname]);
 
   const navigateTo = useCallback(
     (href: string) => {
-      setIsTransitioning(true);
+      // Show overlay immediately to cover everything
+      setShowOverlay(true);
+      // Navigate after overlay is visible
       setTimeout(() => {
         router.push(href);
-        setTimeout(() => setIsTransitioning(false), 50);
-      }, 100);
+      }, 60);
     },
     [router]
   );
 
   return (
-    <TransitionContext.Provider value={{ navigateTo, isTransitioning }}>
+    <TransitionContext.Provider value={{ navigateTo }}>
       {children}
+      {/* Full-screen overlay that covers the flash */}
+      <div
+        className={`fixed inset-0 bg-background z-40 pointer-events-none transition-opacity duration-100 ${
+          showOverlay ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ top: "57px" }} // Below the header (h-14 + border)
+      />
     </TransitionContext.Provider>
-  );
-}
-
-export function TransitionMain({ children }: { children: ReactNode }) {
-  const { isTransitioning } = usePageTransition();
-
-  return (
-    <main
-      className={`max-w-7xl mx-auto px-4 py-4 pb-safe transition-opacity duration-100 ${
-        isTransitioning ? "opacity-0" : "opacity-100"
-      }`}
-    >
-      {children}
-    </main>
   );
 }

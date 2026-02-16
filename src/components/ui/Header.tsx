@@ -16,9 +16,12 @@ export default function Header() {
   ];
 
   const handleNav = (href: string) => {
-    setMobileMenuOpen(false);
     if (pathname !== href) {
+      // Navigate first (overlay will cover), then close menu after delay
       navigateTo(href);
+      setTimeout(() => setMobileMenuOpen(false), 80);
+    } else {
+      setMobileMenuOpen(false);
     }
   };
 
