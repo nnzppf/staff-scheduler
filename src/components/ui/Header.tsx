@@ -12,7 +12,7 @@ export default function Header() {
         <Link href="/" className="text-lg font-bold text-gray-900">
           Staff Scheduler
         </Link>
-        <nav className="flex gap-1">
+        <nav className="flex gap-1 flex-wrap">
           <Link
             href="/"
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -22,6 +22,16 @@ export default function Header() {
             }`}
           >
             Calendario
+          </Link>
+          <Link
+            href="/history"
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              pathname === "/history"
+                ? "bg-blue-100 text-blue-700"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            Storico
           </Link>
           <Link
             href="/employees"

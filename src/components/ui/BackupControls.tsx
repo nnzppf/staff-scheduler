@@ -11,7 +11,7 @@ export default function BackupControls() {
   const handleExport = () => {
     try {
       exportBackup();
-      setMessage({ type: "success", text: "Backup scaricato con successo" });
+      setMessage({ type: "success", text: "Dati salvati e scaricati con successo" });
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
       console.error(error);
@@ -70,7 +70,7 @@ export default function BackupControls() {
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          Scarica Backup
+          Salva e Scarica
         </button>
         <button
           onClick={handleImportClick}
