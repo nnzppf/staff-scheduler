@@ -7,6 +7,7 @@ import {
   getRedirectResult,
   GoogleAuthProvider,
   User,
+  AuthError,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { initializeUserProfile } from "@/lib/firebase-user";
@@ -23,7 +24,7 @@ export default function LoginScreen({ children }: LoginScreenProps) {
   const [signingIn, setSigningIn] = useState(false);
 
   useEffect(() => {
-    // Check redirect result first (for mobile)
+    // Check redirect result first (for mobile redirect flow)
     getRedirectResult(auth)
       .then(async (result) => {
         if (result?.user) {
@@ -38,6 +39,10 @@ export default function LoginScreen({ children }: LoginScreenProps) {
       })
       .catch((err) => {
         console.error("Redirect result error:", err);
+        const authErr = err as AuthError;
+        if (authErr.code === "auth/unauthorized-domain") {
+          setError("Dominio non autorizzato in Firebase. Contatta l'amministratore.");
+        }
       });
 
     // Listen for auth state changes
@@ -69,27 +74,41 @@ export default function LoginScreen({ children }: LoginScreenProps) {
     setSigningIn(true);
     setError(null);
 
+    const provider = new GoogleAuthProvider();
+
+    // Try popup first (works on most browsers), fallback to redirect
     try {
-      const provider = new GoogleAuthProvider();
-
-      // Use redirect on mobile, popup on desktop
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      if (isMobile) {
-        await signInWithRedirect(auth, provider);
-        // Page will redirect, no need to handle result here
-      } else {
-        const result = await signInWithPopup(auth, provider);
-        if (result.user) {
-          if (!isEmailAuthorized(result.user.email)) {
-            setError("Accesso non autorizzato. Contatta l'amministratore.");
-            await auth.signOut();
-          }
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        if (!isEmailAuthorized(result.user.email)) {
+          setError("Accesso non autorizzato. Contatta l'amministratore.");
+          await auth.signOut();
         }
       }
     } catch (err) {
-      console.error("Sign in error:", err);
-      setError("Errore durante l'accesso. Riprova.");
+      const authErr = err as AuthError;
+      console.error("Sign in error:", authErr.code, authErr.message);
+
+      // If popup blocked or unavailable, try redirect
+      if (
+        authErr.code === "auth/popup-blocked" ||
+        authErr.code === "auth/popup-closed-by-user" ||
+        authErr.code === "auth/cancelled-popup-request"
+      ) {
+        try {
+          await signInWithRedirect(auth, provider);
+          return; // Page will redirect
+        } catch (redirectErr) {
+          console.error("Redirect error:", redirectErr);
+          setError("Errore durante l'accesso. Riprova.");
+        }
+      } else if (authErr.code === "auth/unauthorized-domain") {
+        setError(
+          "Dominio non autorizzato. Vai su Firebase Console → Authentication → Settings → Authorized domains e aggiungi questo dominio."
+        );
+      } else {
+        setError(`Errore: ${authErr.code || "sconosciuto"}. Riprova.`);
+      }
     } finally {
       setSigningIn(false);
     }
