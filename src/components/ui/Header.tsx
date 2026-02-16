@@ -19,7 +19,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-lg font-bold text-gray-900">Staff Scheduler</span>
-          <span className="hidden sm:inline text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+          <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
             by ZazzCode
           </span>
         </Link>

@@ -49,7 +49,6 @@ export default function BackupControls() {
 
   return (
     <div className="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <h3 className="text-sm font-semibold text-gray-700">Backup & Ripristino</h3>
       <div className="flex flex-col sm:flex-row gap-2">
         <button
           onClick={handleExport}
