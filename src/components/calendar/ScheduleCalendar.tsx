@@ -2,14 +2,14 @@
 
 import { useMemo } from "react";
 import { DayPicker } from "react-day-picker";
-import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useScheduleStore } from "@/store/useScheduleStore";
+import { useAppShell } from "@/components/ui/AppShell";
 import BackupControls from "@/components/ui/BackupControls";
 
 export default function ScheduleCalendar() {
-  const router = useRouter();
+  const { setSelectedDate } = useAppShell();
   const getDatesWithSchedules = useScheduleStore(
     (s) => s.getDatesWithSchedules
   );
@@ -20,7 +20,7 @@ export default function ScheduleCalendar() {
 
   const handleDayClick = (day: Date) => {
     const dateStr = format(day, "yyyy-MM-dd");
-    router.push(`/day/${dateStr}`);
+    setSelectedDate(dateStr);
   };
 
   return (

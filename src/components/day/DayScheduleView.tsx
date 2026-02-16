@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useScheduleStore } from "@/store/useScheduleStore";
+import { useAppShell } from "@/components/ui/AppShell";
 import VenueCard from "./VenueCard";
 import PdfExporter from "../pdf/PdfExporter";
 
@@ -13,6 +13,7 @@ interface DayScheduleViewProps {
 }
 
 export default function DayScheduleView({ date }: DayScheduleViewProps) {
+  const { setSelectedDate } = useAppShell();
   const getOrCreateDaySchedule = useScheduleStore(
     (s) => s.getOrCreateDaySchedule
   );
@@ -35,8 +36,8 @@ export default function DayScheduleView({ date }: DayScheduleViewProps) {
   return (
     <div className="pb-20">
       <div className="flex items-center gap-3 mb-6">
-        <Link
-          href="/"
+        <button
+          onClick={() => setSelectedDate(null)}
           className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
         >
           <svg
@@ -52,7 +53,7 @@ export default function DayScheduleView({ date }: DayScheduleViewProps) {
           >
             <polyline points="15 18 9 12 15 6" />
           </svg>
-        </Link>
+        </button>
         <div>
           <h1 className="text-xl font-bold capitalize">{formattedDate}</h1>
           <p className="text-sm text-gray-500">

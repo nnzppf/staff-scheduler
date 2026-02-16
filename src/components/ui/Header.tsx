@@ -1,35 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
-import { usePageTransition } from "./TransitionProvider";
+import { useAppShell, TabId } from "./AppShell";
 
 export default function Header() {
-  const pathname = usePathname();
-  const { navigateTo } = usePageTransition();
+  const { activeTab, setActiveTab, setSelectedDate } = useAppShell();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems = [
-    { href: "/", label: "Calendario" },
-    { href: "/history", label: "Storico" },
-    { href: "/employees", label: "Dipendenti" },
+  const navItems: { id: TabId; label: string }[] = [
+    { id: "calendario", label: "Calendario" },
+    { id: "storico", label: "Storico" },
+    { id: "dipendenti", label: "Dipendenti" },
   ];
 
-  const handleNav = (href: string) => {
-    if (pathname !== href) {
-      // Navigate first (overlay will cover), then close menu after delay
-      navigateTo(href);
-      setTimeout(() => setMobileMenuOpen(false), 80);
-    } else {
-      setMobileMenuOpen(false);
-    }
+  const handleNav = (id: TabId) => {
+    setSelectedDate(null);
+    setActiveTab(id);
+    setMobileMenuOpen(false);
   };
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
         <button
-          onClick={() => handleNav("/")}
+          onClick={() => handleNav("calendario")}
           className="flex items-center gap-2"
         >
           <span className="text-lg font-bold text-gray-900">Staff Scheduler</span>
@@ -42,10 +36,10 @@ export default function Header() {
         <nav className="hidden sm:flex gap-2">
           {navItems.map((item) => (
             <button
-              key={item.href}
-              onClick={() => handleNav(item.href)}
+              key={item.id}
+              onClick={() => handleNav(item.id)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                pathname === item.href
+                activeTab === item.id
                   ? "bg-blue-100 text-blue-700"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
@@ -85,10 +79,10 @@ export default function Header() {
           <nav className="flex flex-col">
             {navItems.map((item) => (
               <button
-                key={item.href}
-                onClick={() => handleNav(item.href)}
+                key={item.id}
+                onClick={() => handleNav(item.id)}
                 className={`px-4 py-3 text-sm font-medium border-b border-gray-100 transition-colors text-left ${
-                  pathname === item.href
+                  activeTab === item.id
                     ? "bg-blue-50 text-blue-700"
                     : "text-gray-600 hover:bg-gray-50"
                 }`}
