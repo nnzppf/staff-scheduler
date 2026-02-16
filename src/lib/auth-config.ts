@@ -4,7 +4,8 @@
  */
 export const AUTHORIZED_EMAILS: string[] = [
   "filzantrade@gmail.com", // Admin - Owner
-  "linopegoraro.dir@gmail.com", // Manager - Friend
+  "linopegoraro.dir@gmail.com", // Manager
+  "raffaele.rinaldi120103@gmail.com", // Manager
 ];
 
 /**
