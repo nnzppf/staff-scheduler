@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { usePageTransition } from "./TransitionProvider";
 
 export default function Header() {
   const pathname = usePathname();
+  const { navigateTo } = usePageTransition();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -14,22 +15,32 @@ export default function Header() {
     { href: "/employees", label: "Dipendenti" },
   ];
 
+  const handleNav = (href: string) => {
+    setMobileMenuOpen(false);
+    if (pathname !== href) {
+      navigateTo(href);
+    }
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
+        <button
+          onClick={() => handleNav("/")}
+          className="flex items-center gap-2"
+        >
           <span className="text-lg font-bold text-gray-900">Staff Scheduler</span>
           <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
             by ZazzCode
           </span>
-        </Link>
+        </button>
 
         {/* Desktop Nav */}
         <nav className="hidden sm:flex gap-2">
           {navItems.map((item) => (
-            <Link
+            <button
               key={item.href}
-              href={item.href}
+              onClick={() => handleNav(item.href)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 pathname === item.href
                   ? "bg-blue-100 text-blue-700"
@@ -37,7 +48,7 @@ export default function Header() {
               }`}
             >
               {item.label}
-            </Link>
+            </button>
           ))}
         </nav>
 
@@ -70,18 +81,17 @@ export default function Header() {
         <div className="sm:hidden border-t border-gray-200 bg-white">
           <nav className="flex flex-col">
             {navItems.map((item) => (
-              <Link
+              <button
                 key={item.href}
-                href={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`px-4 py-3 text-sm font-medium border-b border-gray-100 transition-colors ${
+                onClick={() => handleNav(item.href)}
+                className={`px-4 py-3 text-sm font-medium border-b border-gray-100 transition-colors text-left ${
                   pathname === item.href
                     ? "bg-blue-50 text-blue-700"
                     : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
                 {item.label}
-              </Link>
+              </button>
             ))}
           </nav>
         </div>
