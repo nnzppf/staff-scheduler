@@ -29,39 +29,51 @@ export default function TransitionProvider({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [showOverlay, setShowOverlay] = useState(false);
+  const [phase, setPhase] = useState<"idle" | "fade-in" | "visible" | "fade-out">("idle");
   const [prevPathname, setPrevPathname] = useState(pathname);
 
-  // When pathname changes, the new page has mounted — hide the overlay
+  // When pathname changes, new page is mounted — start fade-out
   useEffect(() => {
     if (pathname !== prevPathname) {
       setPrevPathname(pathname);
-      // Small delay to let the new page render before removing overlay
-      setTimeout(() => setShowOverlay(false), 30);
+      // Let new page render one frame, then fade out overlay
+      requestAnimationFrame(() => {
+        setPhase("fade-out");
+        setTimeout(() => setPhase("idle"), 250);
+      });
     }
   }, [pathname, prevPathname]);
 
   const navigateTo = useCallback(
     (href: string) => {
-      // Show overlay immediately to cover everything
-      setShowOverlay(true);
-      // Navigate after overlay is visible
+      // Phase 1: fade overlay in
+      setPhase("fade-in");
+      // Phase 2: once overlay is opaque, navigate
       setTimeout(() => {
+        setPhase("visible");
         router.push(href);
-      }, 60);
+      }, 150);
     },
     [router]
   );
 
+  const overlayOpacity =
+    phase === "idle" ? "opacity-0" :
+    phase === "fade-in" ? "opacity-100" :
+    phase === "visible" ? "opacity-100" :
+    "opacity-0"; // fade-out
+
+  const overlayDuration =
+    phase === "fade-in" ? "duration-150" :
+    phase === "fade-out" ? "duration-200" :
+    "duration-0";
+
   return (
     <TransitionContext.Provider value={{ navigateTo }}>
       {children}
-      {/* Full-screen overlay that covers the flash */}
       <div
-        className={`fixed inset-0 bg-background z-40 pointer-events-none transition-opacity duration-100 ${
-          showOverlay ? "opacity-100" : "opacity-0"
-        }`}
-        style={{ top: "57px" }} // Below the header (h-14 + border)
+        className={`fixed inset-0 bg-background z-40 pointer-events-none transition-opacity ${overlayDuration} ${overlayOpacity}`}
+        style={{ top: "57px" }}
       />
     </TransitionContext.Provider>
   );
