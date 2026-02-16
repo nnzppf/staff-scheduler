@@ -3,7 +3,7 @@
  * Only these Google accounts can view and manage schedules.
  */
 export const AUTHORIZED_EMAILS: string[] = [
-  "filippo.zanon@gmail.com", // Admin - Owner (change to your actual email)
+  "filzantrade@gmail.com", // Admin - Owner
   "linopegoraro.dir@gmail.com", // Manager - Friend
 ];
 
