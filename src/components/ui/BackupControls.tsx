@@ -113,6 +113,12 @@ export default function BackupControls() {
           {message.text}
         </div>
       )}
+      <div className="text-xs text-gray-500 text-center mt-2 leading-relaxed">
+        <p>
+          Salva sempre la tua sessione e scarica il salvataggio così da poterlo riutilizzare su un altro dispositivo.
+          I dati rimangono sempre al sicuro nel tuo browser.
+        </p>
+      </div>
     </div>
   );
 }
