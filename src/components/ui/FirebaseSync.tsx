@@ -15,50 +15,54 @@ export default function FirebaseSync() {
 
   useEffect(() => {
     const syncData = async () => {
-      // Wait for both stores to be hydrated from localStorage
-      const userHydrated = useUserStore.getState()._hasHydrated;
-      const scheduleHydrated = useScheduleStore.getState()._hasHydrated;
-
-      if (!userHydrated || !scheduleHydrated) {
-        console.log("Waiting for stores to hydrate...", { userHydrated, scheduleHydrated });
-        // Try again in 300ms
-        setTimeout(syncData, 300);
-        return;
-      }
-
-      // Additional delay to ensure localStorage data is fully loaded into store
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      const userProfile = useUserStore.getState().userProfile;
-
-      // Only sync if user is logged in
-      if (!userProfile) {
-        console.log("User not logged in, skipping sync");
-        setHasChecked(true);
-        return;
-      }
-
       try {
+        // Wait for both stores to be hydrated from localStorage
+        const userHydrated = useUserStore.getState()?._hasHydrated;
+        const scheduleHydrated = useScheduleStore.getState()?._hasHydrated;
+
+        if (!userHydrated || !scheduleHydrated) {
+          console.log("Waiting for stores to hydrate...", { userHydrated, scheduleHydrated });
+          // Try again in 300ms
+          setTimeout(syncData, 300);
+          return;
+        }
+
+        // Additional delay to ensure localStorage data is fully loaded into store
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        const userProfile = useUserStore.getState()?.userProfile;
+
+        // Only sync if user is logged in
+        if (!userProfile) {
+          console.log("User not logged in, skipping sync");
+          setHasChecked(true);
+          return;
+        }
+
         console.log("Starting Firebase sync...");
 
         // Load schedules from Firebase
-        await loadSchedulesFromFirebase();
+        try {
+          await loadSchedulesFromFirebase();
+        } catch (error) {
+          console.warn("Failed to load schedules from Firebase:", error);
+        }
 
         // Migration: move data from localStorage to Firebase (one-time)
         // This only happens if there's data in localStorage
-        const localSchedules = localStorage.getItem("staff-scheduler-schedules");
-        if (localSchedules) {
-          try {
-            console.log("Found local schedules, migrating to Firebase...");
-            await migrateSchedulesToFirebase();
-            console.log("✓ Migration complete");
-            // Optional: clear localStorage after successful migration
-            // localStorage.removeItem("staff-scheduler-schedules");
-          } catch (error) {
-            console.warn("Migration skipped or failed", error);
+        try {
+          if (typeof localStorage !== 'undefined') {
+            const localSchedules = localStorage.getItem("staff-scheduler-schedules");
+            if (localSchedules) {
+              console.log("Found local schedules, migrating to Firebase...");
+              await migrateSchedulesToFirebase();
+              console.log("✓ Migration complete");
+            } else {
+              console.log("No local schedules to migrate");
+            }
           }
-        } else {
-          console.log("No local schedules to migrate");
+        } catch (error) {
+          console.warn("Migration skipped or failed", error);
         }
 
         setHasChecked(true);
