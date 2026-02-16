@@ -36,5 +36,11 @@ function generateTimeOptions(): string[] {
 
 export const TIME_OPTIONS = generateTimeOptions();
 
+/** Special value for "until closing time" */
+export const CHIUSURA = "Chiusura";
+
+/** End time options include "Chiusura" as first option */
+export const END_TIME_OPTIONS = [CHIUSURA, ...generateTimeOptions()];
+
 export const DEFAULT_START_TIME = "21:00";
 export const DEFAULT_END_TIME = "03:00";

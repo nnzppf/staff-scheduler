@@ -70,6 +70,7 @@ export default function EmployeeSlot({
           value={assignment.timeSlot.end}
           onChange={handleEndTimeChange}
           label="Fine"
+          includeChiusura
         />
         <button
           onClick={handleRemove}

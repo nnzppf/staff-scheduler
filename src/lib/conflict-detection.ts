@@ -1,11 +1,16 @@
 import { TimeSlot, Assignment } from "@/types";
+import { CHIUSURA } from "./constants";
+
+/** Max end time in normalized minutes (06:00 next day) */
+const MAX_END_MINUTES = (6 + 24) * 60 - 18 * 60; // 720
 
 /**
- * Converts "HH:MM" to minutes on a normalized timeline starting at 18:00.
+ * Converts "HH:MM" or "Chiusura" to minutes on a normalized timeline starting at 18:00.
  * Times 00:00-17:59 are treated as next day (+ 24h).
- * This handles overnight shifts correctly.
+ * "Chiusura" is treated as the latest possible time (06:00).
  */
 function timeToMinutes(time: string): number {
+  if (time === CHIUSURA) return MAX_END_MINUTES;
   const [hours, minutes] = time.split(":").map(Number);
   let total = hours * 60 + minutes;
   if (hours < 18) {
