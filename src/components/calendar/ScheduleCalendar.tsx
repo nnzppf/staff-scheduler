@@ -10,13 +10,16 @@ import BackupControls from "@/components/ui/BackupControls";
 
 export default function ScheduleCalendar() {
   const { setSelectedDate } = useAppShell();
-  const getDatesWithSchedules = useScheduleStore(
-    (s) => s.getDatesWithSchedules
-  );
+  const schedules = useScheduleStore((s) => s.schedules);
 
   const scheduledDates = useMemo(() => {
-    return getDatesWithSchedules().map((d) => new Date(d + "T00:00:00"));
-  }, [getDatesWithSchedules]);
+    return Object.keys(schedules)
+      .filter((date) => {
+        const schedule = schedules[date];
+        return schedule?.venues?.some((vs) => vs.assignments.length > 0);
+      })
+      .map((d) => new Date(d + "T00:00:00"));
+  }, [schedules]);
 
   const handleDayClick = (day: Date) => {
     const dateStr = format(day, "yyyy-MM-dd");
