@@ -1,24 +1,28 @@
 "use client";
 
-import { useState, useEffect, ReactNode } from "react";
+import { ReactNode } from "react";
 import { useEmployeeStore } from "@/store/useEmployeeStore";
+import { useScheduleStore } from "@/store/useScheduleStore";
 
 export default function HydrationGate({ children }: { children: ReactNode }) {
-  const [hydrated, setHydrated] = useState(false);
+  const employeesHydrated = useEmployeeStore((s) => s._hasHydrated);
+  const schedulesHydrated = useScheduleStore((s) => s._hasHydrated);
   const initializeEmployees = useEmployeeStore((s) => s.initializeEmployees);
 
-  useEffect(() => {
-    initializeEmployees();
-    setHydrated(true);
-  }, [initializeEmployees]);
+  const ready = employeesHydrated && schedulesHydrated;
 
-  if (!hydrated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-400 text-lg">Caricamento...</div>
-      </div>
-    );
+  // Initialize employees once hydrated
+  if (ready) {
+    initializeEmployees();
   }
 
-  return <>{children}</>;
+  return (
+    <div
+      className={`transition-opacity duration-150 ${
+        ready ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      {children}
+    </div>
+  );
 }

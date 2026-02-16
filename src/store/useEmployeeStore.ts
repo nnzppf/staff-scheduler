@@ -7,6 +7,8 @@ import { v4 as uuidv4 } from "uuid";
 interface EmployeeState {
   employees: Employee[];
   initialized: boolean;
+  _hasHydrated: boolean;
+  setHasHydrated: (v: boolean) => void;
   initializeEmployees: () => void;
   addEmployee: (name: string, role: RoleId) => void;
   updateEmployee: (id: string, name: string, role: RoleId) => void;
@@ -20,6 +22,8 @@ export const useEmployeeStore = create<EmployeeState>()(
     (set, get) => ({
       employees: [],
       initialized: false,
+      _hasHydrated: false,
+      setHasHydrated: (v: boolean) => set({ _hasHydrated: v }),
 
       initializeEmployees: () => {
         if (!get().initialized) {
@@ -63,6 +67,9 @@ export const useEmployeeStore = create<EmployeeState>()(
     {
       name: "staff-scheduler-employees",
       storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

@@ -13,6 +13,8 @@ import { v4 as uuidv4 } from "uuid";
 
 interface ScheduleState {
   schedules: Record<string, DaySchedule>;
+  _hasHydrated: boolean;
+  setHasHydrated: (v: boolean) => void;
   getOrCreateDaySchedule: (date: string) => DaySchedule;
   addAssignment: (
     date: string,
@@ -58,6 +60,8 @@ export const useScheduleStore = create<ScheduleState>()(
   persist(
     (set, get) => ({
       schedules: {},
+      _hasHydrated: false,
+      setHasHydrated: (v: boolean) => set({ _hasHydrated: v }),
 
       getOrCreateDaySchedule: (date: string) => {
         const existing = get().schedules[date];
@@ -184,6 +188,9 @@ export const useScheduleStore = create<ScheduleState>()(
     {
       name: "staff-scheduler-schedules",
       storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
