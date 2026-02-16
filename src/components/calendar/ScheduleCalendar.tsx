@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { DayPicker } from "react-day-picker";
-import "react-day-picker/style.css";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -35,7 +34,7 @@ export default function ScheduleCalendar() {
         </p>
 
         {/* Calendario responsive */}
-        <div className="w-full flex justify-center bg-white rounded-lg border border-gray-200 p-4 md:p-6 [--rdp-accent-color:#3b82f6] [--rdp-accent-background-color:#dbeafe] overflow-x-auto">
+        <div className="w-full flex justify-center bg-white rounded-lg border border-gray-200 p-4 md:p-6 [--rdp-accent-color:#3b82f6] [--rdp-accent-background-color:#dbeafe] overflow-x-auto min-h-[350px]">
           <DayPicker
             mode="single"
             locale={it}
