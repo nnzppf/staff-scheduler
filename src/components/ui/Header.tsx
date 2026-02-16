@@ -1,41 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { signInWithPopup, signOut, GoogleAuthProvider, User } from "firebase/auth";
+import { signOut, User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { initializeUserProfile } from "@/lib/firebase-user";
 import { useAppShell, TabId } from "./AppShell";
 
 export default function Header() {
   const { activeTab, setActiveTab, setSelectedDate } = useAppShell();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      if (currentUser) {
-        try {
-          await initializeUserProfile(currentUser);
-        } catch (error) {
-          console.error("Error initializing user profile:", error);
-        }
-      }
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
-      setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
-
-  const handleGoogleSignIn = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Sign in error:", error);
-    }
-  };
 
   const handleSignOut = async () => {
     try {
@@ -87,26 +67,17 @@ export default function Header() {
             </button>
           ))}
 
-          {/* Auth Button */}
-          {!loading && (
-            user ? (
-              <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
-                <span className="text-sm text-gray-600">{user.displayName || user.email}</span>
-                <button
-                  onClick={handleSignOut}
-                  className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-                >
-                  Esci
-                </button>
-              </div>
-            ) : (
+          {/* User Info + Sign Out */}
+          {user && (
+            <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
+              <span className="text-sm text-gray-600">{user.displayName || user.email}</span>
               <button
-                onClick={handleGoogleSignIn}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                onClick={handleSignOut}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
               >
-                Accedi con Google
+                Esci
               </button>
-            )
+            </div>
           )}
         </nav>
 
@@ -151,34 +122,22 @@ export default function Header() {
                 {item.label}
               </button>
             ))}
-            {/* Mobile Auth Button */}
-            {!loading && (
-              user ? (
-                <>
-                  <div className="px-4 py-3 text-sm text-gray-600 border-b border-gray-100">
-                    {user.displayName || user.email}
-                  </div>
-                  <button
-                    onClick={() => {
-                      handleSignOut();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 text-left transition-colors"
-                  >
-                    Esci
-                  </button>
-                </>
-              ) : (
+            {/* Mobile User Info + Sign Out */}
+            {user && (
+              <>
+                <div className="px-4 py-3 text-sm text-gray-600 border-b border-gray-100">
+                  {user.displayName || user.email}
+                </div>
                 <button
                   onClick={() => {
-                    handleGoogleSignIn();
+                    handleSignOut();
                     setMobileMenuOpen(false);
                   }}
-                  className="px-4 py-3 text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 text-left transition-colors"
+                  className="px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 text-left transition-colors"
                 >
-                  Accedi con Google
+                  Esci
                 </button>
-              )
+              </>
             )}
           </nav>
         </div>
