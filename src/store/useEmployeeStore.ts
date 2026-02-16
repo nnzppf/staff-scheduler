@@ -10,9 +10,11 @@ interface EmployeeState {
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
   initializeEmployees: () => void;
-  addEmployee: (name: string, role: RoleId) => void;
-  updateEmployee: (id: string, name: string, role: RoleId) => void;
+  addEmployee: (name: string, roles: RoleId[]) => void;
+  updateEmployee: (id: string, name: string, roles: RoleId[]) => void;
   deleteEmployee: (id: string) => void;
+  addRoleToEmployee: (id: string, role: RoleId) => void;
+  removeRoleFromEmployee: (id: string, role: RoleId) => void;
   getEmployeesByRole: (role: RoleId) => Employee[];
   getEmployeeById: (id: string) => Employee | undefined;
 }
@@ -31,19 +33,19 @@ export const useEmployeeStore = create<EmployeeState>()(
         }
       },
 
-      addEmployee: (name, role) => {
+      addEmployee: (name, roles) => {
         set((state) => ({
           employees: [
             ...state.employees,
-            { id: uuidv4(), name, role, active: true },
+            { id: uuidv4(), name, roles, active: true },
           ],
         }));
       },
 
-      updateEmployee: (id, name, role) => {
+      updateEmployee: (id, name, roles) => {
         set((state) => ({
           employees: state.employees.map((e) =>
-            e.id === id ? { ...e, name, role } : e
+            e.id === id ? { ...e, name, roles } : e
           ),
         }));
       },
@@ -56,8 +58,26 @@ export const useEmployeeStore = create<EmployeeState>()(
         }));
       },
 
+      addRoleToEmployee: (id, role) => {
+        set((state) => ({
+          employees: state.employees.map((e) =>
+            e.id === id && !e.roles.includes(role)
+              ? { ...e, roles: [...e.roles, role] }
+              : e
+          ),
+        }));
+      },
+
+      removeRoleFromEmployee: (id, role) => {
+        set((state) => ({
+          employees: state.employees.map((e) =>
+            e.id === id ? { ...e, roles: e.roles.filter((r) => r !== role) } : e
+          ),
+        }));
+      },
+
       getEmployeesByRole: (role) => {
-        return get().employees.filter((e) => e.role === role && e.active);
+        return get().employees.filter((e) => e.roles.includes(role) && e.active);
       },
 
       getEmployeeById: (id) => {

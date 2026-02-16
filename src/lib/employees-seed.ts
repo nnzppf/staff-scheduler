@@ -147,7 +147,7 @@ export function generateSeedEmployees(): Employee[] {
       employees.push({
         id: uuidv4(),
         name,
-        role: role as RoleId,
+        roles: [role as RoleId], // Each employee starts with one role, can add more
         active: true,
       });
     }

@@ -1,11 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { signInWithPopup, signOut, GoogleAuthProvider, User } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { initializeUserProfile } from "@/lib/firebase-user";
 import { useAppShell, TabId } from "./AppShell";
 
 export default function Header() {
   const { activeTab, setActiveTab, setSelectedDate } = useAppShell();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      if (currentUser) {
+        try {
+          await initializeUserProfile(currentUser);
+        } catch (error) {
+          console.error("Error initializing user profile:", error);
+        }
+      }
+      setUser(currentUser);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Sign in error:", error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
 
   const navItems: { id: TabId; label: string }[] = [
     { id: "calendario", label: "Calendario" },
@@ -33,7 +72,7 @@ export default function Header() {
         </button>
 
         {/* Desktop Nav */}
-        <nav className="hidden sm:flex gap-2">
+        <nav className="hidden sm:flex gap-2 items-center">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -47,6 +86,28 @@ export default function Header() {
               {item.label}
             </button>
           ))}
+
+          {/* Auth Button */}
+          {!loading && (
+            user ? (
+              <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
+                <span className="text-sm text-gray-600">{user.displayName || user.email}</span>
+                <button
+                  onClick={handleSignOut}
+                  className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  Esci
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleGoogleSignIn}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              >
+                Accedi con Google
+              </button>
+            )
+          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -90,6 +151,35 @@ export default function Header() {
                 {item.label}
               </button>
             ))}
+            {/* Mobile Auth Button */}
+            {!loading && (
+              user ? (
+                <>
+                  <div className="px-4 py-3 text-sm text-gray-600 border-b border-gray-100">
+                    {user.displayName || user.email}
+                  </div>
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 text-left transition-colors"
+                  >
+                    Esci
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    handleGoogleSignIn();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="px-4 py-3 text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 text-left transition-colors"
+                >
+                  Accedi con Google
+                </button>
+              )
+            )}
           </nav>
         </div>
       )}

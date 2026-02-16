@@ -21,7 +21,7 @@ export interface Role {
 export interface Employee {
   id: string;
   name: string;
-  role: RoleId;
+  roles: RoleId[]; // Multiple roles supported
   active: boolean;
 }
 

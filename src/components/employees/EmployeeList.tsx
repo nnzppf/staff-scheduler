@@ -18,7 +18,7 @@ export default function EmployeeList() {
   const filtered = useMemo(() => {
     return employees.filter((e) => {
       if (!e.active) return false;
-      if (filterRole !== "all" && e.role !== filterRole) return false;
+      if (filterRole !== "all" && !e.roles.includes(filterRole)) return false;
       if (search && !e.name.toLowerCase().includes(search.toLowerCase()))
         return false;
       return true;
@@ -30,7 +30,9 @@ export default function EmployeeList() {
     for (const role of ROLES) counts[role.id] = 0;
     for (const e of employees) {
       if (!e.active) continue;
-      counts[e.role] = (counts[e.role] || 0) + 1;
+      for (const role of e.roles) {
+        counts[role] = (counts[role] || 0) + 1;
+      }
       counts.all += 1;
     }
     return counts;
@@ -121,11 +123,18 @@ export default function EmployeeList() {
             key={emp.id}
             className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-1.5">
               <span className="text-sm font-medium">{emp.name}</span>
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                {ROLES.find((r) => r.id === emp.role)?.name}
-              </span>
+              <div className="flex flex-wrap gap-1">
+                {emp.roles.map((roleId) => (
+                  <span
+                    key={roleId}
+                    className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium"
+                  >
+                    {ROLES.find((r) => r.id === roleId)?.name}
+                  </span>
+                ))}
+              </div>
             </div>
             <div className="flex gap-1">
               <button
